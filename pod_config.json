@@ -1,0 +1,203 @@
+{
+  "config_version": "1.0",
+  "system_name": "Calendar System — Mitigata Prospecting Engine",
+  "credit_budget": {
+    "max_credits_per_run": 50,
+    "credit_warning_threshold": 40,
+    "abort_if_remaining_below": 100
+  },
+  "defaults": {
+    "companies_per_pod": 5,
+    "pocs_per_company": 4,
+    "country": "India",
+    "enrich_on_create": true
+  },
+  "sales_pods": [
+    {
+      "pod_name": "Team Akshaay",
+      "pod_owner": {"name": "Akshaay N", "id": "1929026732"},
+      "associate_pod_owners": [
+        {"name": "Jitesh Bhanushali", "id": "748369889"}
+      ],
+      "callers": [
+        {"name": "Jonathan Nicholas", "id": "160697670"},
+        {"name": "Ankita Singh Vats", "id": "159919525"},
+        {"name": "Lalith Srikakolapu", "id": "160684480"},
+        {"name": "Ruken Trivedi", "id": "160961501"},
+        {"name": "Samridhi Parashar", "id": "160934424"},
+        {"name": "Sanketh CA", "id": "160009131"},
+        {"name": "Manoj R", "id": "159751779"}
+      ],
+      "apollo_list_name": "Calendar — Team Akshaay",
+      "apollo_target_filters": {
+        "organization_num_employees_ranges": ["51,200", "201,500", "501,1000", "1001,5000"],
+        "target_industries": [
+          "hospital & health care",
+          "financial services",
+          "capital markets",
+          "computer software",
+          "information technology and services",
+          "management consulting",
+          "real estate",
+          "investment management",
+          "venture capital & private equity"
+        ],
+        "target_locations": ["Chennai", "Bengaluru", "Mumbai", "New Delhi", "Hyderabad"],
+        "person_titles": [
+          "CIO", "CISO", "CTO", "CFO", "COO",
+          "System Administrator", "IT Manager", "Head of IT",
+          "Compliance Officer", "VP Finance", "Fund Manager",
+          "Head of Engineering"
+        ],
+        "filter_rationale": "Akshaay excels at enterprise account expansion in Hospital/Healthcare (Kauvery 3.4Cr). Jitesh closes high-volume insurance+compliance bundles in BFSI (77 deals). Manoj is a SEBI CSCRF velocity machine for small AIF/VC firms (99 deals). Security products (SIEM, XDR, EDR, DLP) are the pod's bread and butter. Chennai and Bengaluru are strongholds."
+      }
+    },
+    {
+      "pod_name": "Team BAM",
+      "pod_owner": {"name": "Akshit Kaushik", "id": "638566779"},
+      "associate_pod_owners": [
+        {"name": "Minesh Meena", "id": "750101409"}
+      ],
+      "callers": [
+        {"name": "Akash Lamani", "id": "159237707"},
+        {"name": "Nanditha Lokesh", "id": "79239859"},
+        {"name": "Shubhi Jha", "id": "79185849"},
+        {"name": "Subhankar Chowdhury", "id": "159192992"}
+      ],
+      "apollo_list_name": "Calendar — Team BAM",
+      "apollo_target_filters": {
+        "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000"],
+        "target_industries": [
+          "financial services",
+          "information technology and services",
+          "computer software",
+          "insurance",
+          "semiconductors",
+          "consumer services",
+          "consumer goods",
+          "management consulting",
+          "human resources"
+        ],
+        "target_locations": ["Bengaluru", "Mumbai", "Chennai", "Hyderabad", "Gurugram", "Noida"],
+        "person_titles": [
+          "Founder", "CEO", "Co-Founder", "CTO",
+          "VP Engineering", "CFO", "Director Finance",
+          "Head of Finance", "CISO", "DPO",
+          "Procurement Manager", "Sr. IT Manager"
+        ],
+        "filter_rationale": "Akshit is the ultimate Bengaluru startup closer — 38/79 deals in Bengaluru, sells ISO+SOC2+Insurance bundles to Founders/CEOs of funded startups (50-500 employees). Minesh is insurance-heavy in Mumbai mid-market (CFO/COO buyer). Akash does enterprise account expansion (MathCo 89L). Nanditha can land big product deals (Pronto 43.5L). Subhankar is a North India generalist."
+      }
+    },
+    {
+      "pod_name": "Team Archit",
+      "pod_owner": {"name": "Archit Vyas", "id": "671072898"},
+      "associate_pod_owners": [
+        {"name": "Darshan Vishwakarma", "id": "77750779"}
+      ],
+      "callers": [
+        {"name": "Shekhar Jha", "id": "161621185"},
+        {"name": "Rima Singh", "id": "160749235"},
+        {"name": "Dhruvika Bhardwaj", "id": "165118937"},
+        {"name": "Akshay Tomar", "id": "160050642"}
+      ],
+      "apollo_list_name": "Calendar — Team Archit",
+      "apollo_target_filters": {
+        "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000"],
+        "target_industries": [
+          "financial services",
+          "information technology and services",
+          "computer software",
+          "construction",
+          "apparel & fashion",
+          "defense & space",
+          "investment management",
+          "printing",
+          "hospitality"
+        ],
+        "target_locations": ["New Delhi", "Delhi", "Gurugram", "Noida", "Hyderabad", "Mumbai", "Jaipur", "Chennai"],
+        "person_titles": [
+          "CISO", "CTO", "CFO", "Co-Founder", "CEO",
+          "DPO", "IT Manager", "Head of IT Infrastructure",
+          "Sr. Director Technology", "Company Secretary",
+          "Compliance Officer", "Risk & Compliance Manager",
+          "Operations Manager"
+        ],
+        "filter_rationale": "Archit is a North India insurance+compliance specialist — Delhi is his base (15 deals). Sells cyber insurance + VAPT bundles to fintech companies. Darshan sells IT infrastructure products (Microsoft, Endpoint Central) to IT managers in North India. Shekhar specializes in CMMI + TransBnk-style compliance. Akshay Tomar does mid-market compliance (construction, US). Rima handles international insurance + hardware."
+      }
+    },
+    {
+      "pod_name": "Team Shivang",
+      "pod_owner": {"name": "Shivang Wanchoo", "id": "403991595"},
+      "associate_pod_owners": [],
+      "callers": [
+        {"name": "Kevino Koso", "id": "160684493"},
+        {"name": "Sumit Singh", "id": "160570998"},
+        {"name": "Raju Sudi", "id": "79043766"},
+        {"name": "Aman Jaiswal", "id": "76737257"}
+      ],
+      "apollo_list_name": "Calendar — Team Shivang",
+      "apollo_target_filters": {
+        "organization_num_employees_ranges": ["1,10", "11,50", "51,200", "201,500", "501,1000"],
+        "target_industries": [
+          "investment management",
+          "investment banking",
+          "capital markets",
+          "financial services",
+          "insurance",
+          "venture capital & private equity",
+          "information technology and services",
+          "computer software",
+          "mechanical or industrial engineering",
+          "legal services"
+        ],
+        "target_locations": ["Hyderabad", "Mumbai", "Bengaluru", "Surat", "New Delhi", "Pune"],
+        "person_titles": [
+          "Compliance Head", "Compliance Officer", "Chief Compliance Officer",
+          "CEO", "CTO", "CFO", "CIO",
+          "Company Secretary", "GRC Engineer",
+          "Sr. Information Security Manager",
+          "Director Finance", "IT Head",
+          "Head of Technology", "DPO"
+        ],
+        "filter_rationale": "Shivang is a SEBI/ANMI compliance specialist — Hyderabad is his base (9 deals). Very similar to Manoj R but with larger avg deal size and more insurance bundling. Targets small financial firms (10-250 employees). Raju has two modes: deep enterprise account farming (Mainetti 65L) and SEBI CSCRF for capital markets. Aman is a Mumbai generalist with insurance+security mix. Sumit closes large compliance bundles (SOC2+ISO+HIPAA)."
+      }
+    },
+    {
+      "pod_name": "Team Rahul",
+      "pod_owner": {"name": "Rahul Gajbhiye", "id": "161762946"},
+      "associate_pod_owners": [
+        {"name": "Rishi Sharma", "id": "75620812"}
+      ],
+      "callers": [
+        {"name": "Shefali Singh", "id": "160844446"},
+        {"name": "Atul Choudhary", "id": "159661633"},
+        {"name": "Shivdarshan Tarali", "id": "159822386"}
+      ],
+      "apollo_list_name": "Calendar — Team Rahul",
+      "apollo_target_filters": {
+        "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000", "1001,5000"],
+        "target_industries": [
+          "pharmaceuticals",
+          "computer software",
+          "capital markets",
+          "financial services",
+          "information technology and services",
+          "venture capital & private equity",
+          "entertainment",
+          "professional training & coaching",
+          "non-profit organization management"
+        ],
+        "target_locations": ["Bengaluru", "New Delhi", "Delhi", "Mumbai", "Gurugram", "Hyderabad", "Zirakpur"],
+        "person_titles": [
+          "CTO", "Co-Founder", "CEO",
+          "VP Engineering", "CFO",
+          "Head of Technology", "Head of Finance",
+          "Senior Compliance Officer", "Finance Manager",
+          "Server Administrator", "COO",
+          "Legal Counsel", "Cyber Security Manager"
+        ],
+        "filter_rationale": "Rishi is a triple-threat (products+insurance+compliance) and Microsoft licensing is his biggest revenue driver (Venus Remedies 24.7L MS licenses). Also sells to VC/PE firms. Shefali focuses on US enterprise compliance (PharmaACE 10.5L in Princeton). Newer pod still building pipeline — needs volume across pharma, software, and capital markets."
+      }
+    }
+  ]
+}
