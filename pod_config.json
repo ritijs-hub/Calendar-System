@@ -1,15 +1,18 @@
 {
-  "config_version": "2.0",
-  "system_name": "Calendar System — Mitigata Prospecting Engine",
-  "credit_budget": {
-    "max_credits_per_run": 70,
-    "credit_warning_threshold": 55,
-    "abort_if_remaining_below": 100
-  },
+  "config_version": "5.0",
+  "system_name": "Calendar System v5.0 — Mitigata Prospecting Engine (Production)",
   "defaults": {
     "pocs_per_company": 4,
     "country": "India",
-    "enrich_on_create": true
+    "enrich_on_create": true,
+    "require_email": true,
+    "require_phone_preferred": true
+  },
+  "hubspot_ids": {
+    "pipeline_id": "2395421401",
+    "first_stage_id": "3939572428",
+    "portal_id": "44606448",
+    "lead_to_contact_association_type": 578
   },
   "segmentation_rules": {
     "startup_sme": {"min_employees": 1, "max_employees": 200, "label": "Startup/SME"},
@@ -17,9 +20,8 @@
     "enterprise": {"min_employees": 1001, "max_employees": null, "label": "Enterprise"}
   },
   "signal_fields": {
-    "company_segment": "Startup/SME | Mid-Market | Enterprise — derived from estimated_num_employees",
-    "headcount_growth_6m": "organization.organization_headcount_six_month_growth — percentage",
-    "headcount_growth_12m": "organization.organization_headcount_twelve_month_growth — percentage",
+    "company_segment": "Derived from estimated_num_employees → Startup/SME (<200) | Mid-Market (201–1000) | Enterprise (1001+)",
+    "headcount_growth_12m": "organization.organization_headcount_twelve_month_growth — percentage (number field in HubSpot)",
     "annual_revenue": "organization.organization_revenue — float",
     "latest_funding_stage": "organization.latest_funding_stage — string or null",
     "total_funding": "organization.total_funding — float or null",
@@ -28,295 +30,390 @@
     "company_website": "organization.website_url or organization.primary_domain",
     "tech_stack": "organization.technology_names — array of strings (top 5 relevant)"
   },
-  "pitch_label_rules": {
-    "_instructions": "For each contact, pick the TOP 5 Mitigata products/services to recommend for the first call. Start with the industry map, then adjust using segment and title modifiers. The final pitch_label is a comma-separated string of 5 items.",
-    "industry_product_map": {
-      "financial services": ["Cyber Insurance", "D&O Insurance", "Crime Insurance", "SEBI CSCRF Compliance", "Mitigata Console"],
-      "capital markets": ["SEBI CSCRF Compliance", "Cyber Insurance", "D&O Insurance", "VCAP", "Crime Insurance"],
-      "venture capital & private equity": ["VCAP", "D&O Insurance", "Cyber Insurance", "SOC 2 Compliance", "Mitigata Console"],
-      "investment management": ["VCAP", "D&O Insurance", "Cyber Insurance", "SEBI CSCRF Compliance", "Crime Insurance"],
-      "investment banking": ["D&O Insurance", "Cyber Insurance", "Crime Insurance", "SEBI CSCRF Compliance", "Mitigata Console"],
-      "insurance": ["Cyber Insurance", "D&O Insurance", "ISO 27001", "Mitigata Console", "Crime Insurance"],
-      "hospital & health care": ["Cyber Insurance", "HIPAA/DISHA Compliance", "Mitigata Console", "EDR/Endpoint Security", "D&O Insurance"],
-      "pharmaceuticals": ["Cyber Insurance", "CPI (Contaminated Products Insurance)", "D&O Insurance", "ISO 27001", "Mitigata Console"],
-      "computer software": ["Cyber Insurance", "Tech E&O", "SOC 2 Compliance", "ISO 27001", "Mitigata Console"],
-      "information technology and services": ["Cyber Insurance", "Tech E&O", "SOC 2 Compliance", "Mitigata Console", "ISO 27001"],
-      "management consulting": ["Cyber Insurance", "Professional Indemnity", "D&O Insurance", "ISO 27001", "Mitigata Console"],
-      "construction": ["CGL", "Workmen Compensation", "Cyber Insurance", "Fire Insurance", "D&O Insurance"],
-      "apparel & fashion": ["Cyber Insurance", "CGL", "D&O Insurance", "Fire Insurance", "Mitigata Console"],
-      "defense & space": ["Cyber Insurance", "ISO 27001", "SIEM/SOC", "Mitigata Console", "D&O Insurance"],
-      "hospitality": ["Cyber Insurance", "CGL", "Fire Insurance", "D&O Insurance", "Mitigata Console"],
-      "printing": ["CGL", "Cyber Insurance", "Fire Insurance", "Workmen Compensation", "D&O Insurance"],
-      "consumer services": ["Cyber Insurance", "CGL", "D&O Insurance", "DPDPA Compliance", "Mitigata Console"],
-      "consumer goods": ["Cyber Insurance", "CPI (Contaminated Products Insurance)", "CGL", "D&O Insurance", "Fire Insurance"],
-      "human resources": ["Cyber Insurance", "DPDPA Compliance", "D&O Insurance", "Employee Benefits Insurance", "Mitigata Console"],
-      "semiconductors": ["Cyber Insurance", "Tech E&O", "ISO 27001", "D&O Insurance", "Mitigata Console"],
-      "legal services": ["Cyber Insurance", "Professional Indemnity", "D&O Insurance", "DPDPA Compliance", "Mitigata Console"],
-      "mechanical or industrial engineering": ["Cyber Insurance", "CGL", "Fire Insurance", "Workmen Compensation", "D&O Insurance"],
-      "entertainment": ["Media Liability", "Cyber Insurance", "D&O Insurance", "Professional Indemnity", "Mitigata Console"],
-      "professional training & coaching": ["Cyber Insurance", "Professional Indemnity", "D&O Insurance", "DPDPA Compliance", "Mitigata Console"],
-      "non-profit organization management": ["Cyber Insurance", "D&O Insurance", "CGL", "ISO 27001", "Mitigata Console"],
-      "real estate": ["Cyber Insurance", "D&O Insurance", "Fire Insurance", "CGL", "Crime Insurance"],
-      "_default": ["Cyber Insurance", "D&O Insurance", "Mitigata Console", "ISO 27001", "Crime Insurance"]
+  "hubspot_lead_property_map": {
+    "_description": "Maps enriched data to HubSpot lead property internal names. These properties must exist in the New Lead Pipeline.",
+    "pitch_label": "pitch_label",
+    "headcount_growth_12m": "organization_headcount_twelve_month_growth",
+    "segment": "segment",
+    "revenue": "revenue",
+    "funding_stage": "funding_stage",
+    "total_funding": "total_funding",
+    "founded_year": "founded_year",
+    "tech_stack": "tech_stack",
+    "company_website": "company_website",
+    "company_domain": "company_domain",
+    "company_industry": "company_industry",
+    "company_employees": "company_employees",
+    "prospecting_source": "prospecting_source",
+    "primary_poc_name": "primary_poc_name",
+    "primary_poc_title": "primary_poc_title",
+    "primary_poc_email": "primary_poc_email",
+    "primary_poc_phone": "primary_poc_phone",
+    "primary_poc_linkedin": "primary_poc_linkedin",
+    "primary_poc_job_change": "primary_poc_job_change",
+    "additional_pocs": "additional_pocs"
+  },
+  "pitch_label_generation": {
+    "_instructions": "DO NOT use a hardcoded industry-to-product map. Instead, dynamically analyze the company's industry, segment, tech stack, funding stage, and the POC's title to recommend the TOP 5–6 most relevant products from the full product catalog below. The AI must reason about what the company actually needs based on its profile. For example: a pharma manufacturer needs CPI + Cyber Insurance + ISO 27001; a funded SaaS startup needs Tech E&O + SOC 2 + D&O; a hospital needs HIPAA/DISHA + Cyber Insurance + EDR. Always include at least one Insurance product and one non-insurance product (security tool, compliance, or Gordon AI). Output as comma-separated string.",
+    "segment_guidance": {
+      "Startup/SME": "Prioritize Cyber Insurance + D&O bundle. Add SOC 2 if IT/software. Lead with affordability. Include Gordon AI Attack Surface Monitoring for always-on protection.",
+      "Mid-Market": "Prioritize standalone Cyber Insurance. Add ISO 27001 and Mitigata Console. Emphasize marketplace discounts on security tools.",
+      "Enterprise": "Prioritize Mitigata Console + SIEM/SOC/XDR. Lead with Gordon AI Cyber Risk Scoring. Emphasize GRC platform and marketplace (30%+ discounts on 500+ products)."
     },
-    "segment_modifiers": {
-      "Startup/SME": "Prioritize Cyber Insurance + D&O bundle. Add SOC 2 if IT/software. Lead with affordability (Mitigata premium from ₹2-2.5L for 5Cr cover).",
-      "Mid-Market": "Prioritize Cyber Insurance standalone. Add ISO 27001. Emphasize Mitigata Console (free with insurance, worth $5000).",
-      "Enterprise": "Prioritize Mitigata Console + SIEM/SOC. Lead with RELIQ risk quantification. Emphasize marketplace discounts (30%+ on 500+ products)."
-    },
-    "title_modifiers": {
-      "CEO|Founder|Co-Founder": "Lead with D&O Insurance + Cyber Insurance bundle. Mention VCAP if VC/PE. Emphasize board-level risk quantification.",
-      "CIO|CTO|Head of Technology|Head of Engineering|VP Engineering": "Lead with Mitigata Console. Emphasize security products marketplace (EDR, SIEM, WAF). Add SOC 2/ISO.",
-      "CISO|Sr. Information Security Manager|Cyber Security Manager|GRC Engineer": "Lead with Cyber Insurance. Emphasize Mitigata Console (attack surface monitoring, dark web, phishing sim). Add VAPT/Pen Testing.",
-      "CFO|Director Finance|Head of Finance|Finance Manager|VP Finance|Fund Manager": "Lead with Cyber Insurance (financial loss protection). Quantify risk with RELIQ. Add D&O + Crime Insurance.",
-      "Compliance Head|Compliance Officer|Chief Compliance Officer|DPO|Company Secretary|Risk & Compliance Manager|Senior Compliance Officer": "Lead with GRC Automation (ISO 27001/SOC 2/PCI DSS). Add DPDPA/GDPR compliance. Emphasize Mitigata Console GRC module.",
-      "IT Manager|Head of IT|Head of IT Infrastructure|System Administrator|Server Administrator|Sr. IT Manager|IT Head": "Lead with Mitigata Console + security products (EDR, Firewall, Email Security). Emphasize marketplace discounts. Add ISO 27001.",
-      "COO|Operations Manager|Procurement Manager": "Lead with Cyber Insurance (business interruption cover). Add CGL + Workmen Comp if manufacturing. Emphasize operational resilience."
+    "title_guidance": {
+      "CEO|Founder|Co-Founder|Managing Director": "Lead with D&O Insurance + Cyber Insurance. Mention VCAP if VC/PE. Emphasize board-level risk quantification via Gordon AI.",
+      "CIO|CTO|Head of Technology|VP Engineering": "Lead with Mitigata Console and security tools marketplace (EDR, SIEM, WAF). Add SOC 2/ISO.",
+      "CISO|Information Security|Cyber Security|GRC": "Lead with Cyber Insurance + Gordon AI (attack surface, dark web monitoring, phishing sim). Add VAPT.",
+      "CFO|Finance Director|VP Finance|Fund Manager": "Lead with Cyber Insurance (financial loss protection). Quantify risk with Gordon AI. Add D&O + Crime Insurance.",
+      "Compliance|DPO|Company Secretary|Risk Manager|Legal": "Lead with GRC/Compliance (ISO 27001/SOC 2/PCI DSS/DPDPA). Add Gordon AI Compliance Dashboard. Emphasize regulatory automation.",
+      "IT Manager|Head of IT|System Administrator|IT Head": "Lead with security tools marketplace (EDR, Firewall, Email Security) + Mitigata Console. Add ISO 27001.",
+      "COO|Operations|Procurement": "Lead with Cyber Insurance (business interruption). Add CGL + Workmen Comp if manufacturing. Emphasize operational resilience."
     }
   },
-  "apollo_list_columns": {
-    "_description": "These are the data points to capture per contact. Standard Apollo fields sync to HubSpot automatically. Signals and pitch_label are set as HubSpot custom properties after sync.",
-    "standard_fields": ["first_name", "last_name", "title", "email", "phone", "organization_name"],
-    "company_fields": ["website_url", "industry", "estimated_num_employees", "founded_year"],
-    "signal_fields": ["company_segment", "headcount_growth_6m", "headcount_growth_12m", "annual_revenue", "latest_funding_stage", "total_funding", "job_change_signal", "tech_stack_top5"],
-    "custom_fields": ["pitch_label", "pod_name", "source_date"]
-  },
-  "hubspot_custom_properties": {
-    "_description": "These custom properties must exist in HubSpot before the routine can populate them. Step 0 of the routine will verify/create them.",
-    "contact_properties": [
-      {"name": "company_segment", "label": "Company Segment", "type": "enumeration", "options": ["Startup/SME", "Mid-Market", "Enterprise"]},
-      {"name": "pitch_label", "label": "Pitch Label", "type": "string", "description": "Top 5 Mitigata products/services to pitch on first call"},
-      {"name": "job_change_signal", "label": "Job Change Signal", "type": "enumeration", "options": ["Yes", "No"]},
-      {"name": "headcount_growth_6m", "label": "Headcount Growth (6M)", "type": "string"},
-      {"name": "headcount_growth_12m", "label": "Headcount Growth (12M)", "type": "string"},
-      {"name": "prospecting_source", "label": "Prospecting Source", "type": "string", "description": "Calendar System — auto-prospected"}
+  "product_catalog": {
+    "_description": "Full Mitigata product catalog. The AI must select from this list when generating pitch labels. Grouped by category for reference but selection should be cross-category based on company profile.",
+    "INSURANCE": [
+      "Cyber Insurance", "Cyber Excess / Top-Up", "Standalone Cyber Liability",
+      "First-Party Cyber (BI + Data Recovery)", "Third-Party Cyber Liability",
+      "Technology E&O", "Media & Advertising Liability", "Ransomware & Extortion Cover",
+      "Cyber Crime / Social Engineering Cover", "Professional Indemnity (PI)",
+      "Directors & Officers (D&O)", "Employment Practices Liability (EPLI)",
+      "Fiduciary Liability", "Entity Management Liability", "Crime / Fidelity Insurance",
+      "Trade Credit Insurance", "Kidnap & Ransom (K&R)", "Warranty & Indemnity (W&I / M&A)",
+      "Product Liability", "Property All Risk", "Contractors / Erection All Risk (CAR/EAR)",
+      "Machinery Breakdown", "Boiler & Pressure Vessel", "Electronic Equipment Insurance",
+      "Business Interruption (BI)", "Commercial General Liability (CGL)",
+      "Umbrella / Excess Liability", "Workmen's Compensation", "Public Liability",
+      "Marine Cargo Insurance", "Marine Hull Insurance", "Stock Throughput / Transit",
+      "Group Health / Medical Insurance", "Key-Man Insurance",
+      "Group Personal Accident (GPA)", "Group Term Life (GTL)", "BFSI Risk Package",
+      "Event Cancellation Insurance", "Aviation Insurance",
+      "Energy & Oil Field Insurance", "Political Risk / Terrorism Cover",
+      "Surety / Performance Bond"
     ],
-    "company_properties": [
-      {"name": "company_segment", "label": "Company Segment", "type": "enumeration", "options": ["Startup/SME", "Mid-Market", "Enterprise"]},
-      {"name": "latest_funding_stage", "label": "Latest Funding Stage", "type": "string"},
-      {"name": "total_funding", "label": "Total Funding", "type": "string"},
-      {"name": "annual_revenue_apollo", "label": "Annual Revenue (Apollo)", "type": "string"},
-      {"name": "tech_stack", "label": "Tech Stack", "type": "string"},
-      {"name": "headcount_growth_6m", "label": "Headcount Growth (6M)", "type": "string"},
-      {"name": "headcount_growth_12m", "label": "Headcount Growth (12M)", "type": "string"},
-      {"name": "founded_year_apollo", "label": "Founded Year", "type": "string"}
+    "SECURITY_TOOLS": [
+      "MDM", "EDR", "Antivirus / EPP", "Mobile Threat Defence (MTD)",
+      "NDR / Network Detection & Response", "Next-Gen Firewall (NGFW)",
+      "Web Application Firewall (WAF)", "API Security Platform",
+      "Secure Web Gateway (SWG)", "Network Access Control (NAC)",
+      "SD-WAN / SASE", "Zero Trust Network Access (ZTNA)", "VPN",
+      "Micro-Segmentation", "IAM", "Privileged Access Management (PAM)", "SSO",
+      "DLP / Data Loss Prevention", "Data Encryption / Key Management (KMS)",
+      "Data Security Posture Management (DSPM)", "Database Activity Monitoring (DAM)",
+      "Digital Rights Management (DRM/IRM)", "CASB",
+      "Cloud Security Posture (CSPM)", "Cloud Workload Protection Platform (CWPP)",
+      "Cloud-Native App Protection (CNAPP)", "Container & Kubernetes Security",
+      "SaaS Security Posture (SSPM)", "Email Security / Anti-Phishing",
+      "Browser Isolation / RBI", "SIEM / Log Management", "SOAR / Security Orchestration",
+      "Vulnerability Management Scanner", "Attack Surface Management (ASM)",
+      "Threat Intelligence Platform (TIP)", "Automated Pen Test Platform",
+      "Breach & Attack Simulation (BAS)", "SAST / Static Code Analysis",
+      "DAST / Dynamic App Testing", "SCA", "SBOM", "Open Source Security",
+      "RASP / Runtime App Protection", "Secrets Management / Vault",
+      "Backup & Disaster Recovery", "Immutable / Air-Gapped Backup",
+      "OT / ICS Security Platform", "IoT Device Security",
+      "GRC / Compliance Platform", "Third-Party Risk Management (TPRM)",
+      "Phishing Simulation Platform", "Security Awareness & Training Platform", "XDR"
+    ],
+    "SECURITY_SERVICES": [
+      "VAPT", "Web Application Pen Test", "Mobile Application Pen Test",
+      "API Security Assessment", "Infrastructure Pen Test",
+      "Cloud Pen Test (AWS/Azure/GCP)", "Red Team Exercise", "Purple Team Exercise",
+      "Source Code Review", "Secure Architecture Review", "Threat Modelling",
+      "DevSecOps Maturity Assessment", "Managed SOC (24x7)", "Managed SIEM",
+      "Managed EDR / MDR", "Managed Vulnerability Scanning", "Managed WAF",
+      "Managed Email Security", "Managed Backup & DR", "Incident Response Retainer",
+      "Emergency Incident Response", "Digital Forensics", "Ransomware Response & Recovery",
+      "Security Awareness Training Programme", "Board / C-Suite Cyber Briefing",
+      "Tabletop Exercise / Crisis Simulation", "Virtual CISO (vCISO)",
+      "Cybersecurity Strategy & Roadmap", "M&A Cyber Due Diligence",
+      "Dark Web & Threat Monitoring"
+    ],
+    "COMPLIANCE": [
+      "ISO 27001 Certification", "ISO 22301 (BCMS)", "ISO 27701 (Privacy)",
+      "ISO 42001 (AI Management)", "SOC 2 Type I", "SOC 2 Type II",
+      "SOC 1 (ISAE 3402)", "PCI DSS v4.0", "SWIFT CSP", "SOX IT Controls",
+      "DPDPA 2023 (India Data Protection)", "CERT-In Compliance",
+      "RBI Cyber Security Framework", "SEBI Cybersecurity Framework",
+      "IRDAI Cyber Security Guidelines", "GDPR", "HIPAA",
+      "NIST Cybersecurity Framework", "CIS Controls v8",
+      "Gap Assessment / Readiness Review", "Risk Assessment (ISO 27005/NIST)",
+      "Policy & Procedure Development", "BCP / DRP Development",
+      "ISMS Implementation", "Internal Audit", "GRC Advisory",
+      "Data Classification & Mapping", "Vendor / Third-Party Risk Assessment",
+      "AI Governance & Ethics Framework"
+    ],
+    "GORDON_AI": [
+      "Attack Surface Monitoring", "Vulnerability Intelligence & Prioritisation",
+      "Brand & Dark Web Monitoring", "Domain & DNS Monitoring", "Data Leak Detection",
+      "SSL/TLS Certificate Monitoring", "AI-SOC / Autonomous Alert Triage",
+      "AI-Powered Playbook Automation", "Threat Intelligence Feed (AI-Curated)",
+      "AI Anomaly Detection (UEBA)", "Cyber Risk Scoring & Quantification",
+      "Compliance Dashboard & Tracker", "Third-Party / Vendor Risk Scoring",
+      "AI Policy Generator & Gap Finder", "Phishing Simulation & Awareness",
+      "Breach & Attack Simulation", "Executive Reporting / Board Pack",
+      "Cyber Investment ROI Dashboard", "Industry Benchmark & Peer Comparison",
+      "Cyber Insurance Readiness Score", "Claims Intelligence & Loss Modelling"
     ]
   },
   "sales_pods": [
     {
       "pod_name": "Team Akshaay",
-      "pod_owner": {"name": "Akshaay N", "id": "1929026732"},
+      "pod_owner": {"name": "Akshaay N", "hubspot_owner_id": "1929026732"},
       "associate_pod_owners": [
-        {"name": "Jitesh Bhanushali", "id": "748369889"}
+        {"name": "Jitesh Bhanushali", "hubspot_owner_id": "748369889"}
       ],
       "callers": [
-        {"name": "Jonathan Nicholas", "id": "160697670"},
-        {"name": "Ankita Singh Vats", "id": "159919525"},
-        {"name": "Lalith Srikakolapu", "id": "160684480"},
-        {"name": "Ruken Trivedi", "id": "160961501"},
-        {"name": "Samridhi Parashar", "id": "160934424"},
-        {"name": "Sanketh CA", "id": "160009131"},
-        {"name": "Manoj R", "id": "159751779"}
+        {"name": "Jonathan Nicholas", "hubspot_owner_id": "160697670"},
+        {"name": "Ankita Singh Vats", "hubspot_owner_id": "159919525"},
+        {"name": "Lalith Srikakolapu", "hubspot_owner_id": "160684480"},
+        {"name": "Ruken Trivedi", "hubspot_owner_id": "160961501"},
+        {"name": "Samridhi Parashar", "hubspot_owner_id": "160934424"},
+        {"name": "Sanketh CA", "hubspot_owner_id": "160009131"},
+        {"name": "Manoj R", "hubspot_owner_id": "159751779"}
       ],
       "rep_count": 6,
       "dial_target_per_day": 600,
       "meeting_target_per_day": 30,
       "companies_per_run": 4,
-      "apollo_list_name": "Calendar — Team Akshaay",
       "apollo_target_filters": {
-        "organization_num_employees_ranges": ["51,200", "201,500", "501,1000", "1001,5000"],
-        "target_industries": [
-          "hospital & health care",
-          "financial services",
-          "capital markets",
-          "computer software",
-          "information technology and services",
-          "management consulting",
-          "real estate",
-          "investment management",
-          "venture capital & private equity"
+        "filter_sets": [
+          {
+            "set_name": "healthcare_tier2_cities",
+            "organization_num_employees_ranges": ["51,200", "201,500", "501,1000"],
+            "q_organization_keyword_tags": ["multi-specialty hospital", "diagnostic chain", "clinic network", "telemedicine", "healthtech platform", "medical devices", "home healthcare"],
+            "organization_locations": ["Coimbatore", "Kochi", "Vizag", "Lucknow", "Chandigarh", "Ahmedabad", "Jaipur", "Indore"]
+          },
+          {
+            "set_name": "bfsi_emerging_segments",
+            "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000", "1001,5000"],
+            "q_organization_keyword_tags": ["neobank", "wealthtech", "regtech", "insurtech", "payment gateway", "lending platform", "digital banking", "credit scoring", "KYC platform", "UPI"],
+            "organization_locations": ["Bengaluru", "Mumbai", "Hyderabad", "Pune", "Gurugram", "Chennai"]
+          },
+          {
+            "set_name": "enterprise_it_new_verticals",
+            "organization_num_employees_ranges": ["201,500", "501,1000", "1001,5000", "5001,10000"],
+            "q_organization_keyword_tags": ["cloud migration", "managed services", "cybersecurity company", "data analytics", "AI ML platform", "enterprise software", "ERP vendor", "DevOps"],
+            "organization_locations": ["Bengaluru", "Hyderabad", "Pune", "Chennai", "Noida", "Gurugram"]
+          }
         ],
-        "q_organization_keyword_tags": ["hospital", "healthcare", "NBFC", "fintech", "mutual fund", "insurance company", "stockbroker", "asset management", "IT services", "consulting", "real estate developer"],
-        "target_locations": ["Chennai", "Bengaluru", "Mumbai", "New Delhi", "Hyderabad"],
         "person_titles": [
           "CIO", "CISO", "CTO", "CFO", "COO",
           "System Administrator", "IT Manager", "Head of IT",
           "Compliance Officer", "VP Finance", "Fund Manager",
-          "Head of Engineering"
+          "Head of Engineering", "VP Technology",
+          "Director Information Security", "Chief Risk Officer"
         ],
-        "filter_rationale": "Akshaay excels at enterprise account expansion in Hospital/Healthcare (Kauvery 3.4Cr). Jitesh closes high-volume insurance+compliance bundles in BFSI (77 deals). Manoj is a SEBI CSCRF velocity machine for small AIF/VC firms (99 deals). Security products (SIEM, XDR, EDR, DLP) are the pod's bread and butter. Chennai and Bengaluru are strongholds.",
-        "pitch_focus": "Cyber Insurance, Mitigata Console (SIEM/EDR/DLP via marketplace), SEBI CSCRF Compliance, D&O Insurance, HIPAA/DISHA for healthcare accounts"
+        "fallback_titles": [
+          "CEO", "Managing Director", "Founder",
+          "Head of Operations", "VP Operations",
+          "General Manager", "Director Technology"
+        ]
       }
     },
     {
       "pod_name": "Team BAM",
-      "pod_owner": {"name": "Akshit Kaushik", "id": "638566779"},
+      "pod_owner": {"name": "Akshit Kaushik", "hubspot_owner_id": "638566779"},
       "associate_pod_owners": [
-        {"name": "Minesh Meena", "id": "750101409"}
+        {"name": "Minesh Meena", "hubspot_owner_id": "750101409"}
       ],
       "callers": [
-        {"name": "Akash Lamani", "id": "159237707"},
-        {"name": "Nanditha Lokesh", "id": "79239859"},
-        {"name": "Shubhi Jha", "id": "79185849"},
-        {"name": "Subhankar Chowdhury", "id": "159192992"}
+        {"name": "Akash Lamani", "hubspot_owner_id": "159237707"},
+        {"name": "Nanditha Lokesh", "hubspot_owner_id": "79239859"},
+        {"name": "Shubhi Jha", "hubspot_owner_id": "79185849"},
+        {"name": "Subhankar Chowdhury", "hubspot_owner_id": "159192992"}
       ],
       "rep_count": 3,
       "dial_target_per_day": 300,
       "meeting_target_per_day": 15,
       "companies_per_run": 2,
-      "apollo_list_name": "Calendar — Team BAM",
       "apollo_target_filters": {
-        "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000"],
-        "target_industries": [
-          "financial services",
-          "information technology and services",
-          "computer software",
-          "insurance",
-          "semiconductors",
-          "consumer services",
-          "consumer goods",
-          "management consulting",
-          "human resources"
+        "filter_sets": [
+          {
+            "set_name": "funded_startups_fresh",
+            "organization_num_employees_ranges": ["11,50", "51,200", "201,500"],
+            "q_organization_keyword_tags": ["seed funded", "pre-series A", "Series A", "Series B", "Y Combinator", "accelerator backed", "venture backed", "deeptech", "B2B SaaS", "API platform"],
+            "organization_locations": ["Bengaluru", "Mumbai", "Delhi NCR", "Hyderabad", "Pune", "Chennai"]
+          },
+          {
+            "set_name": "mid_market_services",
+            "organization_num_employees_ranges": ["201,500", "501,1000"],
+            "q_organization_keyword_tags": ["BPO", "KPO", "staffing agency", "recruitment firm", "HR tech", "payroll platform", "employee benefits", "contract staffing"],
+            "organization_locations": ["Bengaluru", "Mumbai", "Pune", "Noida", "Gurugram", "Kolkata"]
+          },
+          {
+            "set_name": "semiconductor_manufacturing",
+            "organization_num_employees_ranges": ["51,200", "201,500", "501,1000", "1001,5000"],
+            "q_organization_keyword_tags": ["semiconductor", "chip design", "VLSI", "embedded systems", "PCB manufacturing", "electronics manufacturing", "EMS", "OSAT"],
+            "organization_locations": ["Bengaluru", "Hyderabad", "Chennai", "Pune", "Noida"]
+          }
         ],
-        "q_organization_keyword_tags": ["startup", "SaaS", "fintech", "funded startup", "Series A", "Series B", "venture funded", "ISO certification", "SOC 2", "insurance broker", "semiconductor"],
-        "target_locations": ["Bengaluru", "Mumbai", "Chennai", "Hyderabad", "Gurugram", "Noida"],
         "person_titles": [
           "Founder", "CEO", "Co-Founder", "CTO",
           "VP Engineering", "CFO", "Director Finance",
           "Head of Finance", "CISO", "DPO",
-          "Procurement Manager", "Sr. IT Manager"
+          "Procurement Manager", "Sr. IT Manager",
+          "Chief Product Officer", "Head of Operations"
         ],
-        "filter_rationale": "Akshit is the ultimate Bengaluru startup closer — 38/79 deals in Bengaluru, sells ISO+SOC2+Insurance bundles to Founders/CEOs of funded startups (50-500 employees). Minesh is insurance-heavy in Mumbai mid-market (CFO/COO buyer). Akash does enterprise account expansion (MathCo 89L). Nanditha can land big product deals (Pronto 43.5L). Subhankar is a North India generalist.",
-        "pitch_focus": "Cyber Insurance + D&O bundle for startups, ISO 27001 + SOC 2 Compliance, Mitigata Console (free with insurance), Tech E&O for IT/SaaS companies, Employee Benefits Insurance"
+        "fallback_titles": [
+          "COO", "General Manager", "Director Technology",
+          "VP Product", "Head of Engineering",
+          "IT Director", "Finance Controller"
+        ]
       }
     },
     {
       "pod_name": "Team Archit",
-      "pod_owner": {"name": "Archit Vyas", "id": "671072898"},
+      "pod_owner": {"name": "Archit Vyas", "hubspot_owner_id": "671072898"},
       "associate_pod_owners": [
-        {"name": "Darshan Vishwakarma", "id": "77750779"}
+        {"name": "Darshan Vishwakarma", "hubspot_owner_id": "77750779"}
       ],
       "callers": [
-        {"name": "Shekhar Jha", "id": "161621185"},
-        {"name": "Rima Singh", "id": "160749235"},
-        {"name": "Dhruvika Bhardwaj", "id": "165118937"},
-        {"name": "Akshay Tomar", "id": "160050642"}
+        {"name": "Shekhar Jha", "hubspot_owner_id": "161621185"},
+        {"name": "Rima Singh", "hubspot_owner_id": "160749235"},
+        {"name": "Dhruvika Bhardwaj", "hubspot_owner_id": "165118937"},
+        {"name": "Akshay Tomar", "hubspot_owner_id": "160050642"}
       ],
       "rep_count": 4,
       "dial_target_per_day": 400,
       "meeting_target_per_day": 20,
       "companies_per_run": 3,
-      "apollo_list_name": "Calendar — Team Archit",
       "apollo_target_filters": {
-        "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000"],
-        "target_industries": [
-          "financial services",
-          "information technology and services",
-          "computer software",
-          "construction",
-          "apparel & fashion",
-          "defense & space",
-          "investment management",
-          "printing",
-          "hospitality"
+        "filter_sets": [
+          {
+            "set_name": "north_india_compliance_heavy",
+            "organization_num_employees_ranges": ["51,200", "201,500", "501,1000"],
+            "q_organization_keyword_tags": ["logistics company", "supply chain", "warehousing", "3PL", "cold chain", "ecommerce logistics", "last mile delivery", "freight forwarder"],
+            "organization_locations": ["New Delhi", "Gurugram", "Noida", "Jaipur", "Lucknow", "Chandigarh", "Dehradun"]
+          },
+          {
+            "set_name": "construction_infra_real_estate",
+            "organization_num_employees_ranges": ["51,200", "201,500", "501,1000", "1001,5000"],
+            "q_organization_keyword_tags": ["infrastructure developer", "smart city", "solar energy", "renewable energy", "EPC contractor", "real estate developer", "proptech", "facility management"],
+            "organization_locations": ["New Delhi", "Delhi", "Gurugram", "Noida", "Mumbai", "Hyderabad", "Pune", "Ahmedabad"]
+          },
+          {
+            "set_name": "hospitality_fmcg",
+            "organization_num_employees_ranges": ["51,200", "201,500", "501,1000"],
+            "q_organization_keyword_tags": ["hotel chain", "resort", "QSR", "restaurant chain", "food delivery", "FMCG", "consumer brand", "D2C brand", "beverage company"],
+            "organization_locations": ["New Delhi", "Mumbai", "Bengaluru", "Hyderabad", "Chennai", "Jaipur", "Goa"]
+          }
         ],
-        "q_organization_keyword_tags": ["fintech", "VAPT", "cyber insurance", "construction company", "fashion brand", "defense contractor", "hotel chain", "IT infrastructure", "CMMI", "compliance audit"],
-        "target_locations": ["New Delhi", "Delhi", "Gurugram", "Noida", "Hyderabad", "Mumbai", "Jaipur", "Chennai"],
         "person_titles": [
           "CISO", "CTO", "CFO", "Co-Founder", "CEO",
           "DPO", "IT Manager", "Head of IT Infrastructure",
           "Sr. Director Technology", "Company Secretary",
           "Compliance Officer", "Risk & Compliance Manager",
-          "Operations Manager"
+          "Operations Manager", "Head of IT"
         ],
-        "filter_rationale": "Archit is a North India insurance+compliance specialist — Delhi is his base (15 deals). Sells cyber insurance + VAPT bundles to fintech companies. Darshan sells IT infrastructure products (Microsoft, Endpoint Central) to IT managers in North India. Shekhar specializes in CMMI + TransBnk-style compliance. Akshay Tomar does mid-market compliance (construction, US). Rima handles international insurance + hardware.",
-        "pitch_focus": "Cyber Insurance + VAPT bundle, D&O Insurance for Delhi fintech, IT Security Products (EDR, Endpoint Central via marketplace), ISO 27001/CMMI Compliance, CGL + Fire Insurance for construction/hospitality"
+        "fallback_titles": [
+          "Founder", "Managing Director", "COO",
+          "VP Operations", "General Manager IT",
+          "Director Finance", "VP Technology"
+        ]
       }
     },
     {
       "pod_name": "Team Shivang",
-      "pod_owner": {"name": "Shivang Wanchoo", "id": "403991595"},
+      "pod_owner": {"name": "Shivang Wanchoo", "hubspot_owner_id": "403991595"},
       "associate_pod_owners": [],
       "callers": [
-        {"name": "Kevino Koso", "id": "160684493"},
-        {"name": "Sumit Singh", "id": "160570998"},
-        {"name": "Raju Sudi", "id": "79043766"},
-        {"name": "Aman Jaiswal", "id": "76737257"}
+        {"name": "Kevino Koso", "hubspot_owner_id": "160684493"},
+        {"name": "Sumit Singh", "hubspot_owner_id": "160570998"},
+        {"name": "Raju Sudi", "hubspot_owner_id": "79043766"},
+        {"name": "Aman Jaiswal", "hubspot_owner_id": "76737257"}
       ],
       "rep_count": 3,
       "dial_target_per_day": 300,
       "meeting_target_per_day": 15,
       "companies_per_run": 2,
-      "apollo_list_name": "Calendar — Team Shivang",
       "apollo_target_filters": {
-        "organization_num_employees_ranges": ["1,10", "11,50", "51,200", "201,500", "501,1000"],
-        "target_industries": [
-          "investment management",
-          "investment banking",
-          "capital markets",
-          "financial services",
-          "insurance",
-          "venture capital & private equity",
-          "information technology and services",
-          "computer software",
-          "mechanical or industrial engineering",
-          "legal services"
+        "filter_sets": [
+          {
+            "set_name": "capital_markets_fresh",
+            "organization_num_employees_ranges": ["1,10", "11,50", "51,200", "201,500"],
+            "q_organization_keyword_tags": ["portfolio management service", "alternative investment fund", "registered investment advisor", "wealth management", "family office", "custody services", "clearing corporation", "credit rating agency"],
+            "organization_locations": ["Mumbai", "Hyderabad", "Bengaluru", "Chennai", "Ahmedabad", "Kolkata", "Pune"]
+          },
+          {
+            "set_name": "legal_professional_services",
+            "organization_num_employees_ranges": ["11,50", "51,200", "201,500"],
+            "q_organization_keyword_tags": ["law firm", "legal tech", "chartered accountant firm", "audit firm", "tax consultancy", "company secretarial", "insolvency professional", "IP law"],
+            "organization_locations": ["Mumbai", "New Delhi", "Bengaluru", "Chennai", "Hyderabad", "Pune", "Kolkata"]
+          },
+          {
+            "set_name": "manufacturing_industrial",
+            "organization_num_employees_ranges": ["51,200", "201,500", "501,1000", "1001,5000"],
+            "q_organization_keyword_tags": ["auto component", "textile manufacturer", "chemical manufacturer", "packaging company", "steel manufacturer", "industrial automation", "precision engineering"],
+            "organization_locations": ["Pune", "Ahmedabad", "Surat", "Coimbatore", "Ludhiana", "Vadodara", "Rajkot"]
+          }
         ],
-        "q_organization_keyword_tags": ["stockbroker", "SEBI registered", "ANMI member", "AIF", "PMS", "mutual fund distributor", "NBFC", "commodity broker", "depository participant", "legal firm", "compliance consultant"],
-        "target_locations": ["Hyderabad", "Mumbai", "Bengaluru", "Surat", "New Delhi", "Pune"],
         "person_titles": [
           "Compliance Head", "Compliance Officer", "Chief Compliance Officer",
           "CEO", "CTO", "CFO", "CIO",
           "Company Secretary", "GRC Engineer",
           "Sr. Information Security Manager",
           "Director Finance", "IT Head",
-          "Head of Technology", "DPO"
+          "Head of Technology", "DPO",
+          "Managing Partner", "Senior Partner"
         ],
-        "filter_rationale": "Shivang is a SEBI/ANMI compliance specialist — Hyderabad is his base (9 deals). Very similar to Manoj R but with larger avg deal size and more insurance bundling. Targets small financial firms (10-250 employees). Raju has two modes: deep enterprise account farming (Mainetti 65L) and SEBI CSCRF for capital markets. Aman is a Mumbai generalist with insurance+security mix. Sumit closes large compliance bundles (SOC2+ISO+HIPAA).",
-        "pitch_focus": "SEBI CSCRF Compliance, Cyber Insurance for financial firms, D&O Insurance + Crime Insurance bundle, Mitigata Console (GRC Automation), SOC 2 + ISO 27001 for larger firms"
+        "fallback_titles": [
+          "Founder", "COO", "VP Operations",
+          "General Manager", "Head of Legal",
+          "Practice Head", "Director Operations"
+        ]
       }
     },
     {
       "pod_name": "Team Rahul",
-      "pod_owner": {"name": "Rahul Gajbhiye", "id": "161762946"},
+      "pod_owner": {"name": "Rahul Gajbhiye", "hubspot_owner_id": "161762946"},
       "associate_pod_owners": [
-        {"name": "Rishi Sharma", "id": "75620812"}
+        {"name": "Rishi Sharma", "hubspot_owner_id": "75620812"}
       ],
       "callers": [
-        {"name": "Shefali Singh", "id": "160844446"},
-        {"name": "Atul Choudhary", "id": "159661633"},
-        {"name": "Shivdarshan Tarali", "id": "159822386"}
+        {"name": "Shefali Singh", "hubspot_owner_id": "160844446"},
+        {"name": "Atul Choudhary", "hubspot_owner_id": "159661633"},
+        {"name": "Shivdarshan Tarali", "hubspot_owner_id": "159822386"}
       ],
       "rep_count": 4,
       "dial_target_per_day": 400,
       "meeting_target_per_day": 20,
       "companies_per_run": 3,
-      "apollo_list_name": "Calendar — Team Rahul",
       "apollo_target_filters": {
-        "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000", "1001,5000"],
-        "target_industries": [
-          "pharmaceuticals",
-          "computer software",
-          "capital markets",
-          "financial services",
-          "information technology and services",
-          "venture capital & private equity",
-          "entertainment",
-          "professional training & coaching",
-          "non-profit organization management"
+        "filter_sets": [
+          {
+            "set_name": "pharma_biotech_fresh",
+            "organization_num_employees_ranges": ["51,200", "201,500", "501,1000", "1001,5000"],
+            "q_organization_keyword_tags": ["pharmaceutical company", "biotech", "clinical research", "CRO", "CDMO", "API manufacturer", "drug formulation", "medical research", "nutraceutical"],
+            "organization_locations": ["Mumbai", "Hyderabad", "Ahmedabad", "Bengaluru", "Baddi", "Sikkim", "Goa", "Pune"]
+          },
+          {
+            "set_name": "edtech_media_entertainment",
+            "organization_num_employees_ranges": ["11,50", "51,200", "201,500", "501,1000"],
+            "q_organization_keyword_tags": ["edtech", "online education", "e-learning platform", "OTT platform", "gaming studio", "animation studio", "digital media", "content platform", "podcast network"],
+            "organization_locations": ["Bengaluru", "Mumbai", "New Delhi", "Hyderabad", "Pune", "Chennai", "Noida"]
+          },
+          {
+            "set_name": "vc_pe_fund_managers",
+            "organization_num_employees_ranges": ["1,10", "11,50", "51,200"],
+            "q_organization_keyword_tags": ["venture capital", "private equity", "growth equity", "impact fund", "micro VC", "angel network", "fund of funds", "SEBI registered AIF"],
+            "organization_locations": ["Mumbai", "Bengaluru", "New Delhi", "Gurugram", "Chennai", "Hyderabad"]
+          }
         ],
-        "q_organization_keyword_tags": ["pharma", "pharmaceutical manufacturing", "drug manufacturer", "biotech", "VC fund", "private equity", "edtech", "training institute", "media company", "OTT platform", "Microsoft licensing"],
-        "target_locations": ["Bengaluru", "New Delhi", "Delhi", "Mumbai", "Gurugram", "Hyderabad", "Zirakpur"],
         "person_titles": [
           "CTO", "Co-Founder", "CEO",
           "VP Engineering", "CFO",
           "Head of Technology", "Head of Finance",
           "Senior Compliance Officer", "Finance Manager",
           "Server Administrator", "COO",
-          "Legal Counsel", "Cyber Security Manager"
+          "Legal Counsel", "Cyber Security Manager",
+          "Managing Partner", "General Partner"
         ],
-        "filter_rationale": "Rishi is a triple-threat (products+insurance+compliance) and Microsoft licensing is his biggest revenue driver (Venus Remedies 24.7L MS licenses). Also sells to VC/PE firms. Shefali focuses on US enterprise compliance (PharmaACE 10.5L in Princeton). Newer pod still building pipeline — needs volume across pharma, software, and capital markets.",
-        "pitch_focus": "Cyber Insurance for pharma (business interruption + ransomware), Microsoft Licensing (via marketplace), CPI for pharma manufacturers, D&O + VCAP for VC/PE funds, ISO 27001 + SOC 2 for IT companies"
+        "fallback_titles": [
+          "Founder", "Director", "VP Product",
+          "Head of Operations", "IT Manager",
+          "Director Technology", "Chief of Staff"
+        ]
       }
     }
   ]
